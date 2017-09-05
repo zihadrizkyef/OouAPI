@@ -14,7 +14,6 @@ $isGroup = $_POST["is_group"];
 if ($isGroup == 0) {
 	$sql = "INSERT INTO `chat_room` (`name`, `is_group`) VALUES (null, 0)";
 	if ($con->query($sql)) {
-		echo $con->error;
 		$roomCreatedId = $con->insert_id;
 		$recepientId = $_POST["recepient_id"];
 		
@@ -28,12 +27,12 @@ if ($isGroup == 0) {
 	}
 } elseif ($isGroup == 1) {
 	$name = $_POST["name"];
-	$sql = "INSERT INTO `chat_room` (`name`, `is_group`) VALUES (?, 1)";
+	$groupFrbsNotifId = "room_chat_".uniqid();
+	$sql = "INSERT INTO `chat_room` (`name`, `is_group`, `group_frbs_notif_id`) VALUES (?, 1, ?)";
 	$stmt = $con->prepare($sql);
-	$stmt->bind_param("s",  $name);
+	$stmt->bind_param("ss",  $name, $groupFrbsNotifId);
 	$stmt->execute();
 	$roomCreatedId = $con->insert_id;
-	echo $con->error;
 
 	$sql = "INSERT INTO `chat_room_member` (`chat_room_id`, `user_id`) VALUES (?, ?)";
 	$stmt = $con->prepare($sql);
