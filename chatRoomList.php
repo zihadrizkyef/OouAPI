@@ -26,7 +26,7 @@ if ($result_chatroomid->num_rows > 0) {
 		$room = $result_name->fetch_assoc();
 		$roomData["name"] = $room["name"];
 		$roomData["is_group"] = $room["is_group"];
-		$roomData["image_url"] = $room["image_url"];
+		$roomData["image_url"] = "profilePicture/".$room["image_url"];
 		if ($room["is_group"] == 0) {
 			$sql = "SELECT user_id FROM chat_room_member WHERE user_id !=? AND chat_room_id = ?";
 			$stmt = $con->prepare($sql);
@@ -43,11 +43,12 @@ if ($result_chatroomid->num_rows > 0) {
 			$image_url = $result_profile["image_url"];
 
 			$roomData["name"] = $result_profile["name"];
-			$roomData["image_url"] = $result_profile["image_url"];
+			$roomData["image_url"] = "profilePicture/".$result_profile["image_url"];
 		}
 		
 		$roomData["message"] = "";
-		$sql = "SELECT message FROM chat_row WHERE sender_id=$id_recepient ORDER BY id DESC LIMIT 1";
+		$roomId = $roomData["id"];
+		$sql = "SELECT message FROM chat_row WHERE chat_room_id=$roomId ORDER BY id DESC LIMIT 1";
 		$result_message = $con->query($sql);
 		if ($result_message) {
 			if ($result_message->num_rows > 0) {
