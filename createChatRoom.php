@@ -12,10 +12,20 @@ $creatorId = $_POST['creator_id'];
 $isGroup = $_POST["is_group"];
 
 if ($isGroup == 0) {
-	$sql = "INSERT INTO `chat_room` (`name`, `is_group`) VALUES (null, 0)";
-	if ($con->query($sql)) {
+	$recepientId = $_POST["recepient_id"];
+	$sql = "SELECT a.chat_room_id FROM chat_room_member a JOIN chat_room_member b 
+		ON b.chat_room_id = a.chat_room_id 
+		WHERE a.user_id = ? AND b.user_id = ?";
+	$stmt = $con->prepare($sql);
+	$stmt->bind_param("ii", $creatorId, $recepientId);
+	$stmt->execute();
+	$checkExists = $stmt->get_result();
+	if ($checkExists->num_rows > 0) {
+		echo json_encode(array("room_id" => $checkExists->fetch_assoc()["chat_room_id"]));
+	} else {
+		$sql = "INSERT INTO `chat_room` (`name`, `is_group`) VALUES (null, 0)";
+		$con->query($sql);
 		$roomCreatedId = $con->insert_id;
-		$recepientId = $_POST["recepient_id"];
 		
 		$sql = "INSERT INTO `chat_room_member` (`chat_room_id`, `user_id`) VALUES (?, ?)";
 		$stmt = $con->prepare($sql);
