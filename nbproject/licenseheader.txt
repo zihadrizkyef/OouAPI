@@ -1,8 +1,0 @@
-<#if licenseFirst??>
-${licenseFirst}
-</#if>
-${licensePrefix}Created by Zihad
-${licensePrefix}بسم الله الرحمن الرحيم
-<#if licenseLast??>
-${licenseLast}
-</#if>

@@ -1,7 +1,7 @@
 <?php
 
-/* 
- * Created by Zihad
+/**
+ * Created by zihadrizkyef
  * بسم الله الرحمن الرحيم
  */
 
@@ -10,10 +10,10 @@ include_once 'API_INIT.php';
 
 $roomId = $_GET["room_id"];
 $offset = $_GET["offset"];
-$sql = "SELECT * FROM (
-	SELECT * FROM chat_row WHERE chat_room_id=? ORDER BY id DESC LIMIT ?
-	)sub
-	ORDER BY id ASC";
+$sql = $sql = "SELECT * FROM (\n"
+    . "	SELECT * FROM chat_row WHERE chat_room_id=? ORDER BY id DESC LIMIT 50 OFFSET ?\n"
+    . ")sub\n"
+    . "ORDER BY id ASC";
 $stmt = $con->prepare($sql);
 echo $con->error;
 $stmt->bind_param("ii", $roomId, $offset);

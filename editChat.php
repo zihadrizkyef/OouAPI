@@ -1,33 +1,31 @@
 <?php
 
-/* 
- * Created by Zihad
+/**
  * بسم الله الرحمن الرحيم
+ * Created by zihadrizkyef on Monday, September 18th 2017, 9:21:19 am
  */
 
 $con = new mysqli();
-include_once "API_INIT.php";
+include_once 'API_INIT.php';
 
 $id = $_POST["id"];
-$chatRoomId = $_POST["chat_room_id"];
-$text = $_POST["text"];
+$message = $_POST["message"];
+$readed = $_POST["readed"];
 
-$data["action"] = "new_chat";
+$data["action"] = "edit_chat";
 
-$sql = "INSERT INTO `chat_row` (`chat_room_id`, `sender_id`, `message`) VALUES (?, ?, ?)";
+$sql = "UPDATE `chat_row` SET `message` = ?, `readed` = ? WHERE `chat_row`.`id` = ?";
 $stmt = $con->prepare($sql);
-$stmt->bind_param("iis", $chatRoomId, $id, $text);
+$stmt->bind_param("sii", $message, $readed, $id);
 if ($stmt->execute()) {
-	$chatRowId = $con->insert_id;
 	$sql = "SELECT * FROM `chat_row` WHERE `id` = ?";
 	$stmt = $con->prepare($sql);
-	$stmt->bind_param("i", $chatRowId);
+	$stmt->bind_param("i", $id);
 	$stmt->execute();
 	$msgLoad = $stmt->get_result()->fetch_assoc();
 	
 	$sql = "SELECT image_url FROM `user` WHERE id=?";
-	$stmt = $con->prepare($sql);
-	$stmt->bind_param("i",  $id);
+	$stmt = $con->prepare($sql);id);
 	$stmt->execute();
 	$result = $stmt->get_result();
 	if ($result->num_rows > 0) {
@@ -58,7 +56,7 @@ if ($stmt->execute()) {
 		$stmt = $con->prepare($sql);
 		$stmt->bind_param("i", $chatRoomId);
 		$stmt->execute();
-
+		
 		$data["title"] = $room["name"];
 		$notifTarget = "/topics/".$stmt->get_result()->fetch_assoc()["group_frbs_notif_id"];
 	}
@@ -84,6 +82,7 @@ if ($stmt->execute()) {
 	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
 	$result = curl_exec($ch);
 	curl_close($ch);
+	#Echo Result Of FireBase Server
 	
 	echo json_encode($msgLoad);
 }

@@ -1,22 +1,27 @@
 <?php
 
-/* 
- * Created by Zihad
+/**
+ * Created by zihadrizkyef
  * بسم الله الرحمن الرحيم
  */
 
+
 $con = new mysqli();
 include_once 'API_INIT.php';
-include_once 'uploadImageFunc.php';
 
-$imageBytes = json_decode($_POST["imageBytes"]);
-$userId = $_POST["id"];
+$id = $_POST["id"];
+$fileName = "pp_".uniqid();
+$targetFile = getcwd()."/profilePicture/".$fileName;
 
-$imageName = array(uniqid());
-uploadImages("profilePicture", $imageName, $imageBytes);
-
-$sql = "UPDATE `user` SET `image_url` = ? WHERE `user`.`id` = ?";
-$stmt = $con->prepare($sql);
-$stmt->bind_param("si", $imageName[0], $userId);
-$stmt->execute();
-echo "success";
+if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
+    $sql = "UPDATE `user` SET `image_url` = ? WHERE `id` = ?";
+    $stmt = $con->prepare($sql);
+    $stmt->bind_param("si", $fileName, $id);
+    if ($stmt->execute()) {
+        echo json_encode(array("image_url" => $fileName));
+    } else {
+        echo json_encode(array("image_url" => ""));
+    }
+} else {
+    echo json_encode(array("image_url" => ""));
+}
