@@ -21,12 +21,13 @@ if ($result_chatroomid->num_rows > 0) {
 		$roomData = array();
 		$roomData["id"] = $row["chat_room_id"];
 		
-		$sql = "SELECT name, is_group, image_url FROM chat_room WHERE id=".$roomData['id'];
+		$sql = "SELECT name, is_group, image_url, last_activity FROM chat_room WHERE id=".$roomData['id'];
 		$result_name = $con->query($sql);
 		$room = $result_name->fetch_assoc();
 		$roomData["name"] = $room["name"];
 		$roomData["is_group"] = $room["is_group"];
 		$roomData["image_url"] = "profilePicture/".$room["image_url"];
+		$roomData["last_activity"] = $room["last_activity"];
 		if ($room["is_group"] == 0) {
 			$sql = "SELECT user_id FROM chat_room_member WHERE user_id !=? AND chat_room_id = ?";
 			$stmt = $con->prepare($sql);
@@ -45,9 +46,13 @@ if ($result_chatroomid->num_rows > 0) {
 			$roomData["name"] = $result_profile["name"];
 			$roomData["image_url"] = "profilePicture/".$result_profile["image_url"];
 		}
+		$roomId = $roomData["id"];
+
+		$sql = "SELECT readed FROM chat_row WHERE chat_room_id=$roomId AND sender_id != $id AND readed=0";
+		$unreadedMessage = $con->query($sql)->num_rows;
+		$roomData["unreaded_message"] = $unreadedMessage;
 		
 		$roomData["message"] = "";
-		$roomId = $roomData["id"];
 		$sql = "SELECT message FROM chat_row WHERE chat_room_id=$roomId ORDER BY id DESC LIMIT 1";
 		$result_message = $con->query($sql);
 		if ($result_message) {

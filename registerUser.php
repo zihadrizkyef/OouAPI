@@ -20,4 +20,3 @@ if ($stmt->execute()) {
 	$arr = array("id" => $con->insert_id);
 	echo json_encode($arr);
 }
-echo $con->error;

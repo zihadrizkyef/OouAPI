@@ -7,12 +7,13 @@
 
 $con = new mysqli();
 include_once "API_INIT.php";
+include_once "FUNC_countAllUnreaded.php";
 
 $id = $_POST["id"];
 $chatRoomId = $_POST["chat_room_id"];
 $text = $_POST["text"];
 
-$data["action"] = "new_chat";
+$data["action"] = "chat_new";
 
 $sql = "INSERT INTO `chat_row` (`chat_room_id`, `sender_id`, `message`) VALUES (?, ?, ?)";
 $stmt = $con->prepare($sql);
@@ -32,8 +33,14 @@ if ($stmt->execute()) {
 	$result = $stmt->get_result();
 	if ($result->num_rows > 0) {
 		$parse = $result->fetch_assoc();
-		$msgLoad["image_url"] = "profilePicture/".$parse["image_url"];
+		if ($parse["image_url"] != "") {
+			$msgLoad["image_url"] = "profilePicture/".$parse["image_url"];
+		} else {
+			$msgLoad["image_url"] = "";
+		}
 	}
+
+	$con->query("UPDATE chat_room SET last_activity=CURRENT_TIMESTAMP WHERE id=".$chatRoomId);
 
 	$sql = "SELECT name, is_group, image_url FROM chat_room WHERE id=".$chatRoomId;
 	$result_room = $con->query($sql);
@@ -43,16 +50,22 @@ if ($stmt->execute()) {
 		$stmt = $con->prepare($sql);
 		$stmt->bind_param("ii", $id, $chatRoomId);
 		$stmt->execute();
-		$id_recepient = $stmt->get_result()->fetch_assoc()["user_id"];
+		$idRecepient = $stmt->get_result()->fetch_assoc()["user_id"];
+		$data["unreadedMessageCount"] = countAllUnreaded($con, $idRecepient);
 
-		$sql = "SELECT name, frbs_notif_id FROM user WHERE id=?";
+		$sql = "SELECT frbs_notif_id FROM user WHERE id=?";
 		$stmt = $con->prepare($sql);
-		$stmt->bind_param("i", $id_recepient);
+		$stmt->bind_param("i", $idRecepient);
 		$stmt->execute();
 		$result_profile = $stmt->get_result()->fetch_assoc();
-
-		$data["title"] = $result_profile["name"];
 		$notifTarget = $result_profile["frbs_notif_id"];
+
+		$sql = "SELECT name FROM user WHERE id=?";
+		$stmt = $con->prepare($sql);
+		$stmt->bind_param("i", $id);
+		$stmt->execute();
+		$result_profile = $stmt->get_result()->fetch_assoc();
+		$data["title"] = $result_profile["name"];
 	} else {
 		$sql = "SELECT group_frbs_notif_id FROM `chat_room` WHERE id=?";
 		$stmt = $con->prepare($sql);
@@ -62,6 +75,7 @@ if ($stmt->execute()) {
 		$data["title"] = $room["name"];
 		$notifTarget = "/topics/".$stmt->get_result()->fetch_assoc()["group_frbs_notif_id"];
 	}
+
 
 	$data["msg"] = $msgLoad;
 
